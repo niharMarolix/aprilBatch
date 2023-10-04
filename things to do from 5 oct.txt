@@ -1,0 +1,20 @@
+Hash tables
+List comprehensions
+Generators
+Paradigms
+
+modules - 
+numpy
+pandas
+
+Asynchronous/Synchronous calls
+
+Databases - postgresSQL - query writing
+
+Frameworks - 
+Flask - do the basic
+FastApi - do the basic
+Django - ORM
+
+testing - 
+pytest
