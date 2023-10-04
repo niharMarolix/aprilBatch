@@ -1,0 +1,4 @@
+List Comprehensions: 
+Lambda Functions: 
+Map, Filter, and Reduce:
+Decorators:
