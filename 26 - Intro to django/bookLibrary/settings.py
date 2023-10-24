@@ -65,7 +65,7 @@ WSGI_APPLICATION = 'bookLibrary.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'book-library',
+        'NAME': 'forApriBatch',
         'USER': 'postgres',
         'PASSWORD': 'uuuu1111',
         'HOST': 'localhost',

@@ -1,8 +1,12 @@
 from django.urls import path
-from .views import createAuthor, createBooks, getBooknamesFromAuthor
+from .views import *
 
 urlpatterns = [
     path('createAuthor',createAuthor),
     path('createBooks',createBooks),
-    path('getBooknamesFromAuthor',getBooknamesFromAuthor)
+    path('getBooknamesFromAuthor',getBooknamesFromAuthor),
+    path('updateAuthor',updateAuthor),
+    path('deleteAuthor',deleteAuthor),
+    path('register', register),
+    path('login', login)
 ]
