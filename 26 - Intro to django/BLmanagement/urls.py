@@ -8,5 +8,5 @@ urlpatterns = [
     path('updateAuthor',updateAuthor),
     path('deleteAuthor',deleteAuthor),
     path('register', register),
-    path('login', login)
+    path('login', login),
 ]

@@ -3,6 +3,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import *
+from rest_framework import status
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Create your views here.
 @csrf_exempt
@@ -83,48 +86,58 @@ def deleteAuthor(request):
 
 @csrf_exempt
 def register(request):
-    body = json.loads(request.body)
-
-    uname = body['username']
-    pswrd = body['password']
-    emailllll = body['email']
-
-    checkUsename = User.objects.filter(username = uname)
-    if checkUsename.exists():
+    if request.method != "POST":
         return JsonResponse({
-            "message":"Username is already exists, please change your username"
-        })
+            "message":"method not supported",
+            "status":"failed"
+        }, status = status.HTTP_405_METHOD_NOT_ALLOWED)
     
-    checkEmail = User.objects.filter(email = emailllll)
-    if checkEmail.exists():
-        return JsonResponse({
-            "message":"Email  already exists, please login with your username and password"
-        })
-    
+    else:
+        data = json.loads(request.body)
+        emaillllll = data['email']
+        usernameeeeeee = data['username']
+        passwordddddddd = data['password']
 
-    userSave = User.objects.create(username = uname, email = emailllll, password  = pswrd)
+        if not emaillllll or not usernameeeeeee or not passwordddddddd:
+            return JsonResponse({
+                "message":"input fields should not be empty"
+            }, status = status.HTTP_400_BAD_REQUEST)
+        
+        else:
+            user = User.objects.create_user(email =emaillllll, username =usernameeeeeee, password = passwordddddddd  )
+            user.save()
 
-    return JsonResponse({
-        "message":"user successfully creeated"
-    })
-
+            return JsonResponse({
+                "message":f"User {usernameeeeeee} registered successfully"
+            }, status = status.HTTP_201_CREATED)
 
 @csrf_exempt
 def login(request):
-    body = json.loads(request.body)
-
-    uname = body['username']
-    pswrd = body['password']
-
+    if request.method != "POST":
+        return JsonResponse({
+            "message":"method not supported",
+            "status":"failed"
+        }, status = status.HTTP_405_METHOD_NOT_ALLOWED)
     
-    checkUsename = User.objects.filter(username = uname)
-    if checkUsename.exists():
-        user = User.objects.get(username = uname)
-        if pswrd == user.password:
+    else:
+        data = json.loads(request.body)
+        usernameeeeeee = data['username']
+        passwordddddddd = data['password']
+
+        if  not usernameeeeeee or not passwordddddddd:
             return JsonResponse({
-                "message":"login successfull"
-            })
+                "message":"input fields should not be empty"
+            }, status = status.HTTP_400_BAD_REQUEST)
+        
         else:
-            return JsonResponse({
-                "message":"please enter corrrect password"
-            })
+            user = authenticate(request, username = usernameeeeeee, password = passwordddddddd)
+
+            if user is not None:
+                refresf = RefreshToken.for_user(user)
+
+                return JsonResponse({
+                    "access-token":str(refresf.access_token),
+                    "refresh-token":str(refresf)
+                })
+
+
