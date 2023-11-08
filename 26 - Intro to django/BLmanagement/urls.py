@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import *
 
+
 urlpatterns = [
     path('createAuthor',createAuthor),
     path('createBooks',createBooks),
@@ -8,5 +9,5 @@ urlpatterns = [
     path('updateAuthor',updateAuthor),
     path('deleteAuthor',deleteAuthor),
     path('register', register),
-    path('login', login),
+    path('login', login)
 ]

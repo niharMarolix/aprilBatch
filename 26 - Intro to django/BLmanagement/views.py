@@ -6,20 +6,56 @@ from .models import *
 from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import generics,status,views,permissions
+from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
 
 # Create your views here.
-@csrf_exempt
+
+@api_view(['POST'])
+# @permission_classes([permissions.IsAuthenticated])
 def createAuthor(request):
-    requestBodyToDict = json.loads(request.body)
+    try:
+        if request.user.username == "":
+            raise Exception("user is not signed in")
+        if request.user.canCreateAuthor == False:
+            raise Exception("User is not authorised")
+        else:
+            requestBodyToDict = json.loads(request.body)
 
-    nameFromPostmanBody = requestBodyToDict['name']
+            try:
+                emailFromPostman = requestBodyToDict['email']
 
-    savingNameToDb = Author(name = nameFromPostmanBody)
-    savingNameToDb.save()
+                checkEmailExists = Author.objects.filter(email = emailFromPostman).exists()
 
-    return JsonResponse({
-        "message":f"{nameFromPostmanBody} added to Author table"
-    })
+                if checkEmailExists == True:
+                    raise Exception("Auhor is already added to the database")
+                else:
+                    nameFromPostmanBody = requestBodyToDict['name']
+                    email = requestBodyToDict['email']
+
+                    savingNameToDb = Author(name = nameFromPostmanBody, email=email)
+                    savingNameToDb.save()
+
+                    return JsonResponse({
+                        "message":f"{nameFromPostmanBody} added to Author table"
+                    })
+
+            except Exception as ex:
+                return JsonResponse({
+                    "message":str(ex),
+                    "status":"failed"
+                }, status = status.HTTP_409_CONFLICT)
+
+            
+
+    except Exception as ex:
+        return JsonResponse({
+            "message":str(ex),
+            "status":'falied'
+        }, status = status.HTTP_401_UNAUTHORIZED)
+    
+    
 
 @csrf_exempt
 def createBooks(request):
@@ -86,58 +122,68 @@ def deleteAuthor(request):
 
 @csrf_exempt
 def register(request):
-    if request.method != "POST":
-        return JsonResponse({
-            "message":"method not supported",
-            "status":"failed"
-        }, status = status.HTTP_405_METHOD_NOT_ALLOWED)
-    
-    else:
-        data = json.loads(request.body)
-        emaillllll = data['email']
-        usernameeeeeee = data['username']
-        passwordddddddd = data['password']
-
-        if not emaillllll or not usernameeeeeee or not passwordddddddd:
-            return JsonResponse({
-                "message":"input fields should not be empty"
-            }, status = status.HTTP_400_BAD_REQUEST)
+    try:
+        if request.method != "POST":
+            raise Exception("method not allowed", status.HTTP_405_METHOD_NOT_ALLOWED)
         
         else:
-            user = User.objects.create_user(email =emaillllll, username =usernameeeeeee, password = passwordddddddd  )
-            user.save()
+            data = json.loads(request.body)
 
-            return JsonResponse({
-                "message":f"User {usernameeeeeee} registered successfully"
-            }, status = status.HTTP_201_CREATED)
+            esmail = data["email"]
+            usalname = data["username"]
+            passworddddd = data["password"]
+            canCreateAutor = data["canCreateAuthor"]
 
-@csrf_exempt
-def login(request):
-    if request.method != "POST":
-        return JsonResponse({
-            "message":"method not supported",
-            "status":"failed"
-        }, status = status.HTTP_405_METHOD_NOT_ALLOWED)
-    
-    else:
-        data = json.loads(request.body)
-        usernameeeeeee = data['username']
-        passwordddddddd = data['password']
-
-        if  not usernameeeeeee or not passwordddddddd:
-            return JsonResponse({
-                "message":"input fields should not be empty"
-            }, status = status.HTTP_400_BAD_REQUEST)
-        
-        else:
-            user = authenticate(request, username = usernameeeeeee, password = passwordddddddd)
-
-            if user is not None:
-                refresf = RefreshToken.for_user(user)
+            if not esmail or not usalname or not passworddddd:
+                raise Exception("Data not passed or incorrect data passed", status.HTTP_400_BAD_REQUEST)
+            
+            else:
+                user = User.objects.create_user(username = usalname, password = passworddddd, email = esmail, canCreateAuthor = canCreateAutor)
+                user.save()
 
                 return JsonResponse({
-                    "access-token":str(refresf.access_token),
-                    "refresh-token":str(refresf)
-                })
+                    "status":"Success",
+                    "message":f"User {usalname} registered"
+                    
+                }, status = status.HTTP_201_CREATED)
+    
+    except Exception as ex:
+        return JsonResponse({
+            "status":"failed",
+            "message":str(ex)
+        })
+    
+@csrf_exempt
+def login(request):
+    try:
+        if request.method != "POST":
+            raise Exception("method not allowed", status.HTTP_405_METHOD_NOT_ALLOWED)
+        
+        else:
+            data = json.loads(request.body)
+            usalname = data["username"]
+            passworddddd = data["password"]
+
+            if not usalname or not passworddddd:
+                raise Exception("Data not passed or incorrect data passed", status.HTTP_400_BAD_REQUEST)
+            
+            else:
+                user = authenticate(request, username= usalname, password = passworddddd)
+
+                if user is not None:
+                    refrest = RefreshToken.for_user(user)
+
+                    return JsonResponse({
+                        "refreshToken":str(refrest),
+                        "accesstoken":str(refrest.access_token)
+                    })
+
+
+            
+    except Exception as ex:
+        return JsonResponse({
+            "status":"failed",
+            "message":str(ex)
+        })
 
 
